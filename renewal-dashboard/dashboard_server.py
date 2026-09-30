@@ -14,11 +14,15 @@ from openpyxl import load_workbook
 
 
 ROOT = Path(__file__).resolve().parent
-DEFAULT_WORKBOOK = Path.home() / "Desktop" / "Sept'26 PKG1-2 Fresh-Resignof Signoff Sheet.xlsx"
+DEFAULT_WORKBOOKS = {
+    "pkg1-2": Path.home() / "Desktop" / "Sept'26 PKG1-2 Fresh-Resignof Signoff Sheet.xlsx",
+    "pkg-7": Path.home() / "Desktop" / "PKG-7 (September) Fresh-Resignoff Pending Signof Sheet as on 08-09-26.xlsx",
+}
+PACKAGE_LABELS = {"pkg1-2": "PKG1-2", "pkg-7": "PKG-7"}
 HEADER_ALIASES = {
-    "division": ("sub division",),
-    "executive": ("excutive", "executive"),
-    "kind": ("fresh/re-signoff",),
+    "division": ("sub division", "subdivision"),
+    "executive": ("excutive", "exceutive", "executive"),
+    "kind": ("fresh/re-signoff", "month of signoff"),
     "mail": ("mail status",),
     "signoff": ("signoff-status", "signoff status"),
     "communication": ("comm status",),
@@ -27,7 +31,7 @@ HEADER_ALIASES = {
 }
 
 _cache_lock = threading.Lock()
-_cached_signature: tuple[int, int] | None = None
+_cached_signature: tuple[tuple[str, int, int], ...] | None = None
 _cached_snapshot: dict | None = None
 
 
@@ -45,14 +49,16 @@ def column_indexes(header: tuple) -> dict[str, int]:
             if alias in available:
                 result[name] = available[alias]
                 break
-    missing = set(HEADER_ALIASES) - set(result)
+    missing = set(HEADER_ALIASES) - {"communication"} - set(result)
     if missing:
         raise ValueError("The Data sheet is missing required dashboard columns.")
     return result
 
 
 def value_at(row: tuple, indexes: dict[str, int], key: str) -> object:
-    index = indexes[key]
+    index = indexes.get(key)
+    if index is None:
+        return None
     return row[index] if index < len(row) else None
 
 
@@ -164,6 +170,50 @@ def finish_bucket(bucket: dict) -> dict:
     }
 
 
+def merge_breakdowns(groups: list[dict], key: str) -> list[dict]:
+    merged = defaultdict(lambda: {"total": 0, "done": 0, "pending": 0})
+    for group in groups:
+        for item in group[key]:
+            target = merged[item["name"]]
+            for field in ("total", "done", "pending"):
+                target[field] += item[field]
+    return breakdown(merged)
+
+
+def combine_groups(groups: list[dict]) -> dict:
+    summary = {
+        key: sum(group["summary"][key] for group in groups)
+        for key in ("total", "done", "pending", "mailPending", "unclassified")
+    }
+    classified = summary["done"] + summary["pending"]
+    summary["completion"] = round(summary["done"] / classified * 100, 1) if classified else 0
+    type_counts = {
+        key: sum(group["typeCounts"][key] for group in groups)
+        for key in ("fresh", "resignoff", "other")
+    }
+
+    def merge_counts(key: str) -> list[tuple[str, int]]:
+        counts = Counter()
+        for group in groups:
+            counts.update(dict(group[key]))
+        return counts.most_common()
+
+    daily = Counter()
+    for group in groups:
+        daily.update(dict(group["dailySignoffs"]))
+    return {
+        "summary": summary,
+        "typeCounts": type_counts,
+        "signoffStatuses": merge_counts("signoffStatuses"),
+        "mailStatuses": merge_counts("mailStatuses"),
+        "communicationStatuses": merge_counts("communicationStatuses"),
+        "priorities": merge_counts("priorities"),
+        "dailySignoffs": sorted(daily.items()),
+        "divisions": merge_breakdowns(groups, "divisions"),
+        "executives": merge_breakdowns(groups, "executives"),
+    }
+
+
 def read_dashboard(workbook_path: Path, modified_at: datetime) -> dict:
     workbook = load_workbook(workbook_path, read_only=True, data_only=True)
     try:
@@ -203,15 +253,37 @@ def read_dashboard(workbook_path: Path, modified_at: datetime) -> dict:
         workbook.close()
 
 
-def get_snapshot(workbook_path: Path) -> dict:
+def get_snapshot(workbook_paths: dict[str, Path]) -> dict:
     global _cached_signature, _cached_snapshot
     with _cache_lock:
         try:
-            stat = workbook_path.stat()
-            signature = (stat.st_mtime_ns, stat.st_size)
+            signatures = []
+            stats = {}
+            for package, workbook_path in sorted(workbook_paths.items()):
+                stat = workbook_path.stat()
+                signatures.append((package, stat.st_mtime_ns, stat.st_size))
+                stats[package] = stat
+            signature = tuple(signatures)
             if _cached_snapshot is not None and signature == _cached_signature:
                 return _cached_snapshot
-            snapshot = read_dashboard(workbook_path, datetime.fromtimestamp(stat.st_mtime).astimezone())
+
+            package_data = {}
+            for package, workbook_path in sorted(workbook_paths.items()):
+                stat = stats[package]
+                dataset = read_dashboard(workbook_path, datetime.fromtimestamp(stat.st_mtime).astimezone())
+                dataset["label"] = PACKAGE_LABELS.get(package, package.upper())
+                package_data[package] = dataset
+            datasets = list(package_data.values())
+            combined = {
+                "sourceModifiedAt": max(item["sourceModifiedAt"] for item in datasets),
+                "generatedAt": datetime.now().astimezone().isoformat(timespec="seconds"),
+                "latestSignoffDate": max((item["latestSignoffDate"] for item in datasets if item["latestSignoffDate"]), default=None),
+                "groups": {
+                    group: combine_groups([item["groups"][group] for item in datasets])
+                    for group in ("all", "fresh", "resignoff")
+                },
+            }
+            snapshot = {"packages": package_data, "combined": combined, "generatedAt": combined["generatedAt"]}
             _cached_signature = signature
             _cached_snapshot = snapshot
             return snapshot
@@ -242,7 +314,7 @@ class DashboardHandler(BaseHTTPRequestHandler):
             return
         if path == "/api/dashboard":
             try:
-                body = json.dumps(get_snapshot(self.server.workbook_path), ensure_ascii=False).encode("utf-8")
+                body = json.dumps(get_snapshot(self.server.workbook_paths), ensure_ascii=False).encode("utf-8")
                 self.send_body(200, body, "application/json; charset=utf-8")
             except RuntimeError as error:
                 body = json.dumps({"error": str(error)}).encode("utf-8")
@@ -258,17 +330,22 @@ class DashboardHandler(BaseHTTPRequestHandler):
 
 
 def main() -> None:
-    parser = argparse.ArgumentParser(description="Serve a local, aggregate-only signoff dashboard.")
-    parser.add_argument("--workbook", type=Path, default=DEFAULT_WORKBOOK)
+    parser = argparse.ArgumentParser(description="Serve a local, aggregate-only signoff dashboard for multiple packages.")
+    parser.add_argument("--pkg1-2", dest="pkg1_2", type=Path, default=DEFAULT_WORKBOOKS["pkg1-2"])
+    parser.add_argument("--pkg-7", dest="pkg_7", type=Path, default=DEFAULT_WORKBOOKS["pkg-7"])
     parser.add_argument("--host", default="127.0.0.1")
     parser.add_argument("--port", type=int, default=8765)
     args = parser.parse_args()
 
     server = ThreadingHTTPServer((args.host, args.port), DashboardHandler)
-    server.workbook_path = args.workbook.expanduser()
+    server.workbook_paths = {
+        "pkg1-2": args.pkg1_2.expanduser(),
+        "pkg-7": args.pkg_7.expanduser(),
+    }
     address = f"http://{args.host}:{args.port}"
     print(f"Renewal dashboard: {address}")
-    print(f"Workbook: {server.workbook_path.name}")
+    for package, workbook_path in server.workbook_paths.items():
+        print(f"{PACKAGE_LABELS[package]} workbook: {workbook_path.name}")
     print("Only aggregate dashboard metrics are served. Press Ctrl+C to stop.")
     threading.Timer(0.8, webbrowser.open, args=(address,)).start()
     try:

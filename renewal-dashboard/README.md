@@ -1,19 +1,20 @@
 # Renewal Signoff Dashboard
 
-This local dashboard reads the `Data` worksheet from the September 2026 signoff workbook. It serves aggregate counts only; consumer numbers, names, and meter identifiers are never sent to the browser.
+This local dashboard reads the `Data` worksheets from the September 2026 PKG1-2 and PKG-7 signoff workbooks. It serves aggregate counts only; consumer numbers, names, and meter identifiers are never sent to the browser. Use the package selector to see either workbook or both combined.
 
 ## Start
 
 Double-click `start_dashboard.bat`. It opens the dashboard at `http://127.0.0.1:8765` and keeps the local server running in the console. Press Ctrl+C in that console to stop it.
 
-The default workbook path is:
+The default workbook paths are:
 
-`%USERPROFILE%\Desktop\Sept'26 PKG1-2 Fresh-Resignof Signoff Sheet.xlsx`
+- `%USERPROFILE%\Desktop\Sept'26 PKG1-2 Fresh-Resignof Signoff Sheet.xlsx`
+- `%USERPROFILE%\Desktop\PKG-7 (September) Fresh-Resignoff Pending Signof Sheet as on 08-09-26.xlsx`
 
-To use a different local copy, run:
+To use different local copies, run:
 
 ```powershell
-python dashboard_server.py --workbook "C:\path\to\workbook.xlsx"
+python dashboard_server.py --pkg1-2 "C:\path\to\pkg1-2.xlsx" --pkg-7 "C:\path\to\pkg-7.xlsx"
 ```
 
-The browser checks for updates every 60 seconds. The server reloads the workbook only after its modified time or file size changes. If OneDrive syncs the daily workbook to the configured local path, the dashboard picks up the saved update automatically. Keep the server running on the computer that has the workbook.
+The browser checks for updates every 60 seconds. The server checks both workbook timestamps and sizes, and only reparses them when either file changes. If OneDrive syncs the daily workbooks to those local paths, the dashboard picks up saved updates automatically. Keep the server running on the computer that has both workbooks.

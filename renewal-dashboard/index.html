@@ -51,8 +51,11 @@
     .source-meta { display: flex; flex-direction: column; align-items: end; gap: 5px; color: var(--muted); font-size: .69rem; text-align: right; }
     .source-meta strong { color: #535c51; font-weight: 600; }
     .controls { display: flex; align-items: center; flex-wrap: wrap; justify-content: space-between; gap: 12px; margin-bottom: 14px; }
+    .selector-groups { display: flex; align-items: center; flex-wrap: wrap; gap: 14px; }
+    .selector-group { display: flex; align-items: center; gap: 8px; }
+    .selector-title { color: var(--muted); font: 500 .62rem "DM Mono", monospace; letter-spacing: .04em; text-transform: uppercase; }
     .segments { display: inline-flex; padding: 3px; border: 1px solid var(--line); border-radius: 6px; background: #e9ebe4; }
-    .segment { min-height: 32px; padding: 0 13px; border: 0; border-radius: 4px; background: transparent; color: #62695f; cursor: pointer; font-size: .74rem; font-weight: 600; }
+    .segment { min-height: 32px; padding: 0 13px; border: 0; border-radius: 4px; background: transparent; color: #62695f; cursor: pointer; font-size: .74rem; font-weight: 600; white-space: nowrap; }
     .segment[aria-pressed="true"] { background: var(--surface); color: var(--green-dark); box-shadow: 0 1px 4px #15271916; }
     .control-right { display: flex; align-items: center; gap: 10px; }
     .control-label { color: var(--muted); font-size: .72rem; }
@@ -128,7 +131,9 @@
       .heading-row { align-items: start; flex-direction: column; gap: 12px; margin-bottom: 16px; }
       .source-meta { align-items: start; text-align: left; }
       .controls { align-items: start; flex-direction: column; }
-      .segments { width: 100%; }
+      .selector-groups { display: grid; width: 100%; gap: 8px; }
+      .selector-group { justify-content: space-between; gap: 8px; }
+      .selector-group .segments { flex: 1; }
       .segment { flex: 1; padding-inline: 6px; }
       .control-right { width: 100%; justify-content: space-between; }
       .metrics { grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 8px; }
@@ -157,20 +162,27 @@
   <header class="topbar">
     <div class="topbar-inner">
       <div class="brand"><span class="brand-mark" aria-hidden="true">R/</span><span>RENEWAL OPERATIONS</span></div>
-      <div class="top-meta"><span>PKG1-2 · SEPTEMBER 2026</span><span class="live" id="liveStatus"><span class="live-dot" aria-hidden="true"></span><span id="liveLabel">Connecting</span></span></div>
+      <div class="top-meta"><span>PKG1-2 + PKG-7 · SEPTEMBER 2026</span><span class="live" id="liveStatus"><span class="live-dot" aria-hidden="true"></span><span id="liveLabel">Connecting</span></span></div>
     </div>
   </header>
   <main class="main">
     <section class="heading-row" aria-labelledby="pageTitle">
       <div><p class="eyebrow">Signoff control / 01</p><h1 id="pageTitle">Fresh &amp; re-signoff</h1><p class="subheading">Renewal progress across teams and signoff dates.</p></div>
-      <div class="source-meta"><span>Workbook updated <strong id="sourceUpdated">Waiting for data</strong></span><span id="latestDate">Latest signoff date: --</span></div>
+      <div class="source-meta"><span>Sources updated <strong id="sourceUpdated">Waiting for data</strong></span><span id="latestDate">Latest signoff date: --</span></div>
     </section>
 
     <section class="controls" aria-label="Dashboard filters">
-      <div class="segments" role="group" aria-label="Record type">
-        <button class="segment" type="button" data-group="all" aria-pressed="true">All records</button>
-        <button class="segment" type="button" data-group="fresh" aria-pressed="false">Fresh</button>
-        <button class="segment" type="button" data-group="resignoff" aria-pressed="false">Re-signoff</button>
+      <div class="selector-groups">
+        <div class="selector-group"><span class="selector-title">Package</span><div class="segments" role="group" aria-label="Package">
+          <button class="segment" type="button" data-package="all" aria-pressed="true">Both packages</button>
+          <button class="segment" type="button" data-package="pkg1-2" aria-pressed="false">PKG1-2</button>
+          <button class="segment" type="button" data-package="pkg-7" aria-pressed="false">PKG-7</button>
+        </div></div>
+        <div class="selector-group"><span class="selector-title">Records</span><div class="segments" role="group" aria-label="Record type">
+          <button class="segment" type="button" data-group="all" aria-pressed="true">All records</button>
+          <button class="segment" type="button" data-group="fresh" aria-pressed="false">Fresh</button>
+          <button class="segment" type="button" data-group="resignoff" aria-pressed="false">Re-signoff</button>
+        </div></div>
       </div>
       <div class="control-right"><label class="control-label" for="trendRange">Trend range</label><select class="select" id="trendRange"><option value="30">Last 30 days</option><option value="14">Last 14 days</option><option value="all">All dates</option></select></div>
     </section>
@@ -209,11 +221,15 @@
   </main>
   <script>
     const numberFormat = new Intl.NumberFormat("en-US");
-    const state = { data: null, group: "all", tableSearch: "" };
+    const state = { data: null, package: "all", group: "all", tableSearch: "" };
     const byId = (id) => document.getElementById(id);
 
+    function activeDataset() {
+      return state.package === "all" ? state.data?.combined : state.data?.packages?.[state.package];
+    }
+
     function groupData() {
-      return state.data?.groups?.[state.group];
+      return activeDataset()?.groups?.[state.group];
     }
 
     function renderMetrics(data) {
@@ -368,12 +384,14 @@
 
     function render() {
       if (!state.data) return;
+      const dataset = activeDataset();
       const data = groupData();
       renderMetrics(data);
       drawTrend(data);
       renderTable(data);
-      byId("sourceUpdated").textContent = new Date(state.data.sourceModifiedAt).toLocaleString();
-      byId("latestDate").textContent = `Latest signoff date: ${state.data.latestSignoffDate || "--"}`;
+      const sourceDate = new Date(dataset.sourceModifiedAt).toLocaleString();
+      byId("sourceUpdated").textContent = state.package === "all" ? `Both workbooks · ${sourceDate}` : `${dataset.source} · ${sourceDate}`;
+      byId("latestDate").textContent = `Latest signoff date: ${dataset.latestSignoffDate || "--"}`;
       byId("warningMessage").style.display = state.data.warning ? "block" : "none";
       byId("warningMessage").textContent = state.data.warning || "";
     }
@@ -401,6 +419,11 @@
     document.querySelectorAll("[data-group]").forEach((button) => button.addEventListener("click", () => {
       state.group = button.dataset.group;
       document.querySelectorAll("[data-group]").forEach((item) => item.setAttribute("aria-pressed", String(item === button)));
+      render();
+    }));
+    document.querySelectorAll("[data-package]").forEach((button) => button.addEventListener("click", () => {
+      state.package = button.dataset.package;
+      document.querySelectorAll("[data-package]").forEach((item) => item.setAttribute("aria-pressed", String(item === button)));
       render();
     }));
     byId("trendRange").addEventListener("change", () => state.data && drawTrend(groupData()));
