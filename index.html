@@ -1,0 +1,272 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="theme-color" content="#f5f4ee">
+  <meta name="description" content="Find a room and people you'll feel at home with.">
+  <title>Roommates — Find your kind of home</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;600;700&family=Manrope:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+  <style>
+    :root {
+      color-scheme: light;
+      --ink: #20271f;
+      --muted: #74796e;
+      --paper: #f5f4ee;
+      --white: #fffefa;
+      --line: #e5e5dc;
+      --green: #356b4a;
+      --green-dark: #244b35;
+      --lime: #d8ed86;
+      --coral: #e8795c;
+      --shadow: 0 12px 28px rgba(32, 39, 31, .08);
+      font-family: "DM Sans", sans-serif;
+      font-synthesis: none;
+    }
+    * { box-sizing: border-box; }
+    body { margin: 0; background: var(--paper); color: var(--ink); }
+    button, input, select { font: inherit; }
+    button, a, select { -webkit-tap-highlight-color: transparent; }
+    button { color: inherit; }
+    a { color: inherit; text-decoration: none; }
+    .shell { width: min(1320px, calc(100% - 56px)); margin: 0 auto; }
+    .topbar { height: 76px; display: flex; align-items: center; border-bottom: 1px solid var(--line); background: var(--paper); }
+    .nav { display: flex; align-items: center; justify-content: space-between; gap: 24px; }
+    .brand { display: inline-flex; align-items: center; gap: 10px; font: 800 1.22rem "Manrope", sans-serif; letter-spacing: 0; }
+    .brand-mark { width: 31px; height: 31px; display: grid; place-items: center; border-radius: 10px 10px 10px 3px; color: var(--white); background: var(--green); font-size: 18px; }
+    .nav-links { display: flex; align-items: center; gap: 30px; margin-left: auto; color: #5d6459; font-size: .9rem; }
+    .nav-links a:hover { color: var(--green); }
+    .account { display: flex; align-items: center; gap: 14px; }
+    .login { font-size: .9rem; font-weight: 600; }
+    .join { padding: 10px 17px; border: 0; border-radius: 7px; background: var(--green); color: white; cursor: pointer; font-weight: 700; }
+    .join:hover, .search-button:hover { background: var(--green-dark); }
+    main { padding: 35px 0 70px; }
+    .intro { display: flex; align-items: end; justify-content: space-between; gap: 24px; margin-bottom: 24px; }
+    .eyebrow { margin: 0 0 8px; color: var(--green); font-size: .72rem; font-weight: 700; letter-spacing: .13em; text-transform: uppercase; }
+    h1, h2, h3, p { margin-top: 0; }
+    h1 { margin-bottom: 7px; font: 700 clamp(1.9rem, 3.2vw, 2.7rem)/1.12 "Manrope", sans-serif; letter-spacing: 0; }
+    .subtitle { margin: 0; color: var(--muted); font-size: .96rem; }
+    .intro-note { display: flex; align-items: center; gap: 9px; margin-bottom: 4px; color: #626b60; font-size: .83rem; }
+    .online-dot { width: 8px; height: 8px; flex: 0 0 auto; border-radius: 50%; background: #70a86a; box-shadow: 0 0 0 4px #70a86a22; }
+    .search-panel { display: grid; grid-template-columns: minmax(190px, 1.35fr) minmax(150px, 1fr) minmax(145px, .85fr) auto; align-items: end; gap: 12px; padding: 16px; border: 1px solid var(--line); border-radius: 9px; background: var(--white); box-shadow: 0 4px 14px rgba(32,39,31,.035); }
+    .field { min-width: 0; }
+    .field label { display: block; margin: 0 0 7px 1px; color: #646b60; font-size: .72rem; font-weight: 700; }
+    .control { width: 100%; height: 43px; padding: 0 12px; border: 1px solid #dedfd5; border-radius: 6px; outline: none; background: #fff; color: var(--ink); }
+    .control:focus { border-color: var(--green); box-shadow: 0 0 0 3px #356b4a1a; }
+    select.control { cursor: pointer; }
+    .search-button { height: 43px; min-width: 110px; padding: 0 18px; border: 0; border-radius: 6px; background: var(--green); color: white; cursor: pointer; font-weight: 700; }
+    .content { display: grid; grid-template-columns: 222px minmax(0, 1fr); gap: 26px; margin-top: 28px; }
+    .filters { align-self: start; padding: 4px 0; }
+    .filter-head { display: flex; align-items: center; justify-content: space-between; padding-bottom: 13px; border-bottom: 1px solid var(--line); }
+    .filter-head h2 { margin: 0; font: 700 1rem "Manrope", sans-serif; }
+    .reset { padding: 4px 0; border: 0; background: none; color: var(--green); cursor: pointer; font-size: .78rem; font-weight: 700; }
+    .filter-group { padding: 17px 0 16px; border-bottom: 1px solid var(--line); }
+    .filter-group h3 { margin-bottom: 12px; font-size: .82rem; font-weight: 700; }
+    .range-row { display: flex; align-items: center; gap: 8px; }
+    .range-row .control { height: 38px; padding: 0 9px; font-size: .8rem; }
+    .range-separator { color: #8b9087; font-size: .8rem; }
+    .check-list { display: grid; gap: 11px; }
+    .check-row { display: flex; align-items: center; gap: 9px; color: #555d53; cursor: pointer; font-size: .82rem; }
+    .check-row input { width: 15px; height: 15px; accent-color: var(--green); }
+    .results-top { display: flex; align-items: center; justify-content: space-between; gap: 14px; margin-bottom: 15px; }
+    .results-count { margin: 0; font-size: .88rem; font-weight: 700; }
+    .results-count span { color: var(--muted); font-weight: 400; }
+    .sort { display: flex; align-items: center; gap: 8px; color: var(--muted); font-size: .78rem; }
+    .sort select { width: auto; height: 35px; padding: 0 28px 0 9px; border: 1px solid var(--line); border-radius: 5px; background: var(--white); color: var(--ink); font-size: .8rem; }
+    .cards { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 15px; }
+    .listing { min-width: 0; overflow: hidden; border: 1px solid #e8e7de; border-radius: 8px; background: var(--white); transition: transform .18s ease, box-shadow .18s ease; }
+    .listing:hover { transform: translateY(-3px); box-shadow: var(--shadow); }
+    .photo { position: relative; aspect-ratio: 1.48 / 1; overflow: hidden; background: #e4e8de; }
+    .photo img { width: 100%; height: 100%; display: block; object-fit: cover; transition: transform .35s ease; }
+    .listing:hover .photo img { transform: scale(1.035); }
+    .tag { position: absolute; left: 11px; top: 11px; padding: 5px 8px; border-radius: 4px; background: var(--lime); color: #33432c; font-size: .67rem; font-weight: 700; }
+    .heart { position: absolute; top: 9px; right: 9px; width: 34px; height: 34px; display: grid; place-items: center; border: 0; border-radius: 50%; background: #fffefaed; cursor: pointer; font-size: 18px; line-height: 1; }
+    .heart:hover { background: white; }
+    .heart[aria-pressed="true"] { color: var(--coral); }
+    .listing-body { padding: 13px 13px 12px; }
+    .price-row { display: flex; align-items: baseline; justify-content: space-between; gap: 8px; }
+    .price { margin: 0; font: 800 1.1rem "Manrope", sans-serif; white-space: nowrap; }
+    .price small { color: var(--muted); font: 400 .74rem "DM Sans", sans-serif; }
+    .availability { color: var(--green); font-size: .68rem; font-weight: 700; white-space: nowrap; }
+    .listing h3 { overflow: hidden; margin: 8px 0 4px; font: 700 .92rem/1.35 "Manrope", sans-serif; text-overflow: ellipsis; white-space: nowrap; }
+    .location { margin: 0; color: var(--muted); font-size: .77rem; }
+    .details { display: flex; flex-wrap: wrap; gap: 7px; margin-top: 12px; padding-top: 10px; border-top: 1px solid #eeeee8; color: #60675d; font-size: .7rem; }
+    .detail + .detail::before { content: "·"; margin-right: 7px; color: #a1a59c; }
+    .host { display: flex; align-items: center; gap: 8px; margin-top: 13px; }
+    .avatar { width: 27px; height: 27px; display: grid; place-items: center; border-radius: 50%; background: #e5edcf; color: var(--green-dark); font-size: .65rem; font-weight: 700; }
+    .host-copy { color: #62685e; font-size: .68rem; }
+    .verified { margin-left: auto; color: var(--green); font-size: .68rem; font-weight: 700; }
+    .empty { grid-column: 1 / -1; padding: 44px 20px; border: 1px dashed #c9cec0; border-radius: 8px; color: var(--muted); text-align: center; }
+    .empty strong { display: block; margin-bottom: 5px; color: var(--ink); }
+    .mobile-filter { display: none; }
+    footer { padding: 22px 0; border-top: 1px solid var(--line); color: #73796f; font-size: .76rem; }
+    .footer-inner { display: flex; justify-content: space-between; gap: 16px; }
+    @media (max-width: 1050px) {
+      .cards { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+      .content { grid-template-columns: 195px minmax(0, 1fr); gap: 20px; }
+    }
+    @media (max-width: 720px) {
+      .shell { width: min(100% - 32px, 560px); }
+      .topbar { height: 64px; }
+      .nav-links { display: none; }
+      .brand { font-size: 1.08rem; }
+      .join { padding: 9px 12px; font-size: .8rem; }
+      .login { font-size: .82rem; }
+      .account { gap: 11px; }
+      main { padding: 27px 0 48px; }
+      .intro { align-items: start; margin-bottom: 19px; }
+      .intro-note { display: none; }
+      h1 { font-size: 2rem; }
+      .subtitle { font-size: .88rem; }
+      .search-panel { grid-template-columns: 1fr 1fr; gap: 10px; padding: 12px; }
+      .field:first-child { grid-column: 1 / -1; }
+      .search-button { min-width: 0; }
+      .content { display: block; margin-top: 21px; }
+      .filters { display: none; }
+      .mobile-filter { display: flex; align-items: center; justify-content: space-between; margin-bottom: 14px; }
+      .mobile-filter strong { font-size: .88rem; }
+      .mobile-filter button { padding: 8px 11px; border: 1px solid var(--line); border-radius: 5px; background: var(--white); font-size: .78rem; font-weight: 700; }
+      .results-top { margin-bottom: 12px; }
+      .cards { gap: 11px; }
+      .listing-body { padding: 10px; }
+      .price { font-size: 1rem; }
+      .availability { font-size: .62rem; }
+      .listing h3 { font-size: .82rem; }
+      .details { gap: 5px; font-size: .64rem; }
+      .detail + .detail::before { margin-right: 5px; }
+      .host-copy, .verified { font-size: .62rem; }
+      .footer-inner { flex-direction: column; gap: 4px; }
+    }
+    @media (max-width: 390px) {
+      .cards { grid-template-columns: 1fr; }
+      .photo { aspect-ratio: 1.8 / 1; }
+      .listing h3 { font-size: .9rem; }
+    }
+    @media (prefers-reduced-motion: reduce) {
+      *, *::before, *::after { scroll-behavior: auto !important; transition-duration: .01ms !important; }
+    }
+  </style>
+</head>
+<body>
+  <header class="topbar">
+    <nav class="nav shell" aria-label="Main navigation">
+      <a class="brand" href="#top" aria-label="Roommates home"><span class="brand-mark" aria-hidden="true">r</span>roommates</a>
+      <div class="nav-links"><a href="#listings">Find a room</a><a href="#listings">Find a roommate</a><a href="#listings">How it works</a></div>
+      <div class="account"><a class="login" href="#listings">Log in</a><button class="join" type="button">List your room</button></div>
+    </nav>
+  </header>
+  <main id="top" class="shell">
+    <section class="intro" aria-labelledby="page-title">
+      <div><p class="eyebrow">A better way to move in</p><h1 id="page-title">Find a room that feels like yours.</h1><p class="subtitle">Good spaces. Good people. A place to land.</p></div>
+      <div class="intro-note"><span class="online-dot" aria-hidden="true"></span>New rooms added every day</div>
+    </section>
+    <form class="search-panel" id="searchForm">
+      <div class="field"><label for="location">Where do you want to live?</label><input class="control" id="location" name="location" type="search" placeholder="Try a city or neighborhood"></div>
+      <div class="field"><label for="moveDate">Move-in date</label><input class="control" id="moveDate" name="moveDate" type="date" aria-label="Move-in date"></div>
+      <div class="field"><label for="budget">Monthly budget</label><select class="control" id="budget" name="budget"><option value="">Any budget</option><option value="1000">Up to $1,000</option><option value="1500">Up to $1,500</option><option value="2000">Up to $2,000</option></select></div>
+      <button class="search-button" type="submit">Search rooms</button>
+    </form>
+    <section class="content" id="listings" aria-label="Room listings">
+      <aside class="filters" aria-label="Listing filters">
+        <div class="filter-head"><h2>Filters</h2><button class="reset" id="resetFilters" type="button">Clear all</button></div>
+        <div class="filter-group"><h3>Monthly rent</h3><div class="range-row"><input class="control" id="minRent" type="number" min="0" placeholder="Min" aria-label="Minimum monthly rent"><span class="range-separator">to</span><input class="control" id="maxRent" type="number" min="0" placeholder="Max" aria-label="Maximum monthly rent"></div></div>
+        <div class="filter-group"><h3>Room type</h3><div class="check-list"><label class="check-row"><input type="checkbox" name="roomType" value="Private room">Private room</label><label class="check-row"><input type="checkbox" name="roomType" value="Shared room">Shared room</label><label class="check-row"><input type="checkbox" name="roomType" value="Studio">Studio</label></div></div>
+        <div class="filter-group"><h3>Move-in flexibility</h3><div class="check-list"><label class="check-row"><input type="checkbox" id="flexible">Flexible dates</label></div></div>
+      </aside>
+      <div class="results">
+        <div class="mobile-filter"><strong>Browse rooms</strong><button type="button" id="mobileFilters">Filters <span id="activeFilterCount"></span></button></div>
+        <div class="results-top"><p class="results-count" id="resultCount" aria-live="polite">Rooms you might like</p><label class="sort">Sort by <select id="sortBy" aria-label="Sort listings"><option value="recommended">Recommended</option><option value="low">Price: low to high</option><option value="high">Price: high to low</option></select></label></div>
+        <div class="cards" id="cards"></div>
+      </div>
+    </section>
+  </main>
+  <footer><div class="shell footer-inner"><span>Roommates · Make room for good things.</span><span>Room to be yourself, from day one.</span></div></footer>
+  <script>
+    const rooms = [
+      { id: 1, rent: 890, title: "Sunny room in a calm, shared home", city: "Brooklyn, New York", type: "Private room", beds: "1 room", baths: "1 shared bath", flexible: true, tag: "Great match", initials: "JM", host: "Jamie · member since 2023", image: "https://images.unsplash.com/photo-1600210492486-724fe5c67fb0?auto=format&fit=crop&w=900&q=85", alt: "Sunlit living room with warm wood furniture and leafy plants" },
+      { id: 2, rent: 1240, title: "Design-forward room near the park", city: "Logan Square, Chicago", type: "Private room", beds: "1 room", baths: "1 shared bath", flexible: false, tag: "Available now", initials: "AL", host: "Alex · member since 2022", image: "https://images.unsplash.com/photo-1600607687939-ce8a6c25118c?auto=format&fit=crop&w=900&q=85", alt: "Bright modern apartment with large windows and a comfortable sofa" },
+      { id: 3, rent: 760, title: "Easygoing home with a garden", city: "East Austin, Austin", type: "Shared room", beds: "Shared room", baths: "2 shared baths", flexible: true, tag: "Flexible move-in", initials: "SK", host: "Sam · member since 2024", image: "https://images.unsplash.com/photo-1600566753086-00f18fb6b3ea?auto=format&fit=crop&w=900&q=85", alt: "Airy shared home with a dining table and an open living area" },
+      { id: 4, rent: 1580, title: "Quiet room in a creative household", city: "Silver Lake, Los Angeles", type: "Private room", beds: "1 room", baths: "1 shared bath", flexible: true, tag: "New listing", initials: "RT", host: "Riley · member since 2023", image: "https://images.unsplash.com/photo-1600566753190-17f0baa2a6c3?auto=format&fit=crop&w=900&q=85", alt: "Minimal apartment interior with natural materials and soft daylight" },
+      { id: 5, rent: 980, title: "Room in a sunny, plant-filled flat", city: "Mission District, San Francisco", type: "Private room", beds: "1 room", baths: "1 shared bath", flexible: false, tag: "Popular", initials: "MP", host: "Morgan · member since 2021", image: "https://images.unsplash.com/photo-1600210491892-03d54c0aaf87?auto=format&fit=crop&w=900&q=85", alt: "Cozy apartment with an inviting sofa and warm natural light" },
+      { id: 6, rent: 690, title: "Simple, bright room with great housemates", city: "South Philadelphia, Philadelphia", type: "Studio", beds: "Studio", baths: "Private bath", flexible: true, tag: "Good value", initials: "TC", host: "Taylor · member since 2024", image: "https://images.unsplash.com/photo-1600566752355-35792bedcfea?auto=format&fit=crop&w=900&q=85", alt: "Clean, light-filled room with relaxed modern furnishings" }
+    ];
+    const cards = document.querySelector("#cards");
+    const form = document.querySelector("#searchForm");
+    const saved = new Set();
+    const money = new Intl.NumberFormat("en-US");
+
+    function filteredRooms() {
+      const term = document.querySelector("#location").value.trim().toLowerCase();
+      const budget = Number(document.querySelector("#budget").value) || Infinity;
+      const min = Number(document.querySelector("#minRent").value) || 0;
+      const max = Number(document.querySelector("#maxRent").value) || Infinity;
+      const types = [...document.querySelectorAll('input[name="roomType"]:checked')].map((item) => item.value);
+      let visible = rooms.filter((room) => {
+        const matchesLocation = !term || `${room.city} ${room.title}`.toLowerCase().includes(term);
+        const matchesRent = room.rent >= min && room.rent <= Math.min(max, budget);
+        const matchesType = !types.length || types.includes(room.type);
+        const matchesFlex = !document.querySelector("#flexible").checked || room.flexible;
+        return matchesLocation && matchesRent && matchesType && matchesFlex;
+      });
+      const sort = document.querySelector("#sortBy").value;
+      if (sort === "low") visible.sort((a, b) => a.rent - b.rent);
+      if (sort === "high") visible.sort((a, b) => b.rent - a.rent);
+      return visible;
+    }
+
+    function render() {
+      const visible = filteredRooms();
+      const count = document.querySelector("#resultCount");
+      count.innerHTML = `<strong>${visible.length} ${visible.length === 1 ? "room" : "rooms"}</strong> <span>to explore</span>`;
+      const active = Number(Boolean(document.querySelector("#location").value.trim())) +
+        Number(Boolean(document.querySelector("#budget").value)) +
+        Number(Boolean(document.querySelector("#minRent").value || document.querySelector("#maxRent").value)) +
+        document.querySelectorAll('input[name="roomType"]:checked').length + Number(document.querySelector("#flexible").checked);
+      document.querySelector("#activeFilterCount").textContent = active ? `(${active})` : "";
+      if (!visible.length) {
+        cards.innerHTML = '<div class="empty"><strong>No rooms match those filters.</strong>Try a different city or widen your budget.</div>';
+        return;
+      }
+      cards.innerHTML = visible.map((room) => `
+        <article class="listing">
+          <div class="photo"><img src="${room.image}" alt="${room.alt}" loading="lazy"><span class="tag">${room.tag}</span><button class="heart" type="button" aria-label="${saved.has(room.id) ? "Remove saved listing" : "Save listing"}" aria-pressed="${saved.has(room.id)}" data-save="${room.id}">${saved.has(room.id) ? "♥" : "♡"}</button></div>
+          <div class="listing-body"><div class="price-row"><p class="price">$${money.format(room.rent)} <small>/ month</small></p><span class="availability">${room.flexible ? "Flexible" : "Available now"}</span></div>
+          <h3 title="${room.title}">${room.title}</h3><p class="location">${room.city}</p>
+          <div class="details"><span class="detail">${room.type}</span><span class="detail">${room.baths}</span></div>
+          <div class="host"><span class="avatar" aria-hidden="true">${room.initials}</span><span class="host-copy">Hosted by ${room.host}</span><span class="verified">Verified</span></div></div>
+        </article>`).join("");
+    }
+
+    form.addEventListener("submit", (event) => { event.preventDefault(); render(); document.querySelector("#listings").scrollIntoView({ behavior: "smooth", block: "start" }); });
+    document.querySelectorAll(".filters input, #budget, #sortBy").forEach((control) => control.addEventListener("input", render));
+    document.querySelector("#resetFilters").addEventListener("click", () => {
+      form.reset();
+      document.querySelector("#minRent").value = "";
+      document.querySelector("#maxRent").value = "";
+      document.querySelector("#flexible").checked = false;
+      document.querySelectorAll('input[name="roomType"]').forEach((input) => { input.checked = false; });
+      render();
+    });
+    cards.addEventListener("click", (event) => {
+      const button = event.target.closest("[data-save]");
+      if (!button) return;
+      const id = Number(button.dataset.save);
+      saved.has(id) ? saved.delete(id) : saved.add(id);
+      render();
+    });
+    document.querySelector("#mobileFilters").addEventListener("click", () => {
+      const filters = document.querySelector(".filters");
+      const visible = filters.style.display === "block";
+      filters.style.display = visible ? "none" : "block";
+      filters.style.marginBottom = visible ? "" : "18px";
+    });
+    document.querySelector(".join").addEventListener("click", () => {
+      document.querySelector("#listings").scrollIntoView({ behavior: "smooth" });
+      document.querySelector("#location").focus({ preventScroll: true });
+    });
+    render();
+  </script>
+</body>
+</html>

@@ -1,0 +1,414 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="theme-color" content="#f2f3ed">
+  <title>Renewal Signoff | Operations</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=DM+Mono:wght@400;500&family=DM+Sans:wght@400;500;600;700&family=Manrope:wght@500;600;700;800&display=swap" rel="stylesheet">
+  <style>
+    :root {
+      color-scheme: light;
+      --ink: #20271f;
+      --muted: #70776e;
+      --paper: #f2f3ed;
+      --surface: #fffefa;
+      --line: #e1e4da;
+      --green: #316b49;
+      --green-dark: #183e2a;
+      --green-soft: #e6f0e3;
+      --lime: #d9ed88;
+      --amber: #bd7b2c;
+      --amber-soft: #f6edda;
+      --red: #bd5c48;
+      --red-soft: #f6e4df;
+      --blue: #4c7f89;
+      --shadow: 0 8px 22px rgba(32, 39, 31, .045);
+      font-family: "DM Sans", sans-serif;
+      font-synthesis: none;
+    }
+    * { box-sizing: border-box; }
+    body { margin: 0; background: var(--paper); color: var(--ink); }
+    button, input, select { font: inherit; }
+    button, select { -webkit-tap-highlight-color: transparent; }
+    .topbar { background: var(--green-dark); color: white; }
+    .topbar-inner, .main { width: min(1380px, calc(100% - 64px)); margin: auto; }
+    .topbar-inner { height: 64px; display: flex; align-items: center; justify-content: space-between; gap: 20px; }
+    .brand { display: flex; align-items: center; gap: 11px; font: 800 .92rem "Manrope", sans-serif; letter-spacing: .02em; }
+    .brand-mark { width: 27px; height: 27px; display: grid; place-items: center; border: 1px solid #ffffff55; border-radius: 7px 7px 7px 2px; color: var(--lime); font: 500 .75rem "DM Mono", monospace; }
+    .top-meta { display: flex; align-items: center; gap: 18px; color: #d0ded3; font-size: .73rem; }
+    .live { display: flex; align-items: center; gap: 8px; padding: 6px 9px; border: 1px solid #ffffff2b; border-radius: 4px; color: white; font-size: .69rem; }
+    .live-dot { width: 7px; height: 7px; border-radius: 50%; background: #a6d971; box-shadow: 0 0 0 3px #a6d97122; }
+    .live.offline .live-dot { background: #e6a07b; box-shadow: 0 0 0 3px #e6a07b22; }
+    .main { padding: 29px 0 55px; }
+    .heading-row { display: flex; align-items: end; justify-content: space-between; gap: 22px; margin-bottom: 21px; }
+    .eyebrow { margin: 0 0 7px; color: var(--green); font: 500 .66rem "DM Mono", monospace; letter-spacing: .08em; text-transform: uppercase; }
+    h1, h2, h3, p { margin-top: 0; }
+    h1 { margin-bottom: 7px; font: 700 clamp(1.75rem, 3vw, 2.4rem)/1.15 "Manrope", sans-serif; letter-spacing: 0; }
+    .subheading { margin: 0; color: var(--muted); font-size: .87rem; }
+    .source-meta { display: flex; flex-direction: column; align-items: end; gap: 5px; color: var(--muted); font-size: .69rem; text-align: right; }
+    .source-meta strong { color: #535c51; font-weight: 600; }
+    .controls { display: flex; align-items: center; flex-wrap: wrap; justify-content: space-between; gap: 12px; margin-bottom: 14px; }
+    .segments { display: inline-flex; padding: 3px; border: 1px solid var(--line); border-radius: 6px; background: #e9ebe4; }
+    .segment { min-height: 32px; padding: 0 13px; border: 0; border-radius: 4px; background: transparent; color: #62695f; cursor: pointer; font-size: .74rem; font-weight: 600; }
+    .segment[aria-pressed="true"] { background: var(--surface); color: var(--green-dark); box-shadow: 0 1px 4px #15271916; }
+    .control-right { display: flex; align-items: center; gap: 10px; }
+    .control-label { color: var(--muted); font-size: .72rem; }
+    .select { min-height: 36px; padding: 0 30px 0 10px; border: 1px solid var(--line); border-radius: 5px; background: var(--surface); color: var(--ink); font-size: .76rem; }
+    .metrics { display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); gap: 12px; }
+    .metric { min-width: 0; padding: 16px 17px 14px; border: 1px solid var(--line); border-radius: 7px; background: var(--surface); box-shadow: var(--shadow); }
+    .metric-label { display: flex; align-items: center; justify-content: space-between; gap: 8px; margin-bottom: 11px; color: #5d665b; font-size: .72rem; font-weight: 600; }
+    .metric-marker { width: 7px; height: 7px; flex: 0 0 auto; border-radius: 2px; background: var(--green); }
+    .metric:nth-child(2) .metric-marker { background: #6c9a67; }
+    .metric:nth-child(3) .metric-marker { background: var(--amber); }
+    .metric:nth-child(4) .metric-marker { background: var(--blue); }
+    .metric-value { margin: 0; font: 700 clamp(1.65rem, 2.5vw, 2.2rem)/1 "Manrope", sans-serif; letter-spacing: 0; font-variant-numeric: tabular-nums; }
+    .metric-foot { display: flex; align-items: center; justify-content: space-between; gap: 8px; margin-top: 9px; color: #848a80; font-size: .66rem; }
+    .metric-foot strong { color: #52634f; font: 500 .68rem "DM Mono", monospace; }
+    .panel { min-width: 0; border: 1px solid var(--line); border-radius: 7px; background: var(--surface); box-shadow: var(--shadow); }
+    .analysis-grid { display: grid; grid-template-columns: minmax(0, 1.7fr) minmax(290px, .9fr); gap: 13px; margin-top: 13px; }
+    .panel-head { display: flex; align-items: start; justify-content: space-between; gap: 16px; padding: 16px 17px 12px; }
+    .panel-head h2 { margin: 0 0 4px; font: 700 .9rem "Manrope", sans-serif; }
+    .panel-head p { margin: 0; color: var(--muted); font-size: .7rem; }
+    .panel-kicker { color: #82897e; font: 500 .62rem "DM Mono", monospace; white-space: nowrap; }
+    .chart-wrap { height: 220px; padding: 0 13px 12px; }
+    #trendChart { display: block; width: 100%; height: 100%; }
+    .status-content { padding: 1px 17px 17px; }
+    .completion-line { display: flex; align-items: baseline; justify-content: space-between; gap: 12px; margin: 7px 0 10px; }
+    .completion-line strong { font: 700 1.65rem "Manrope", sans-serif; }
+    .completion-line span { color: var(--muted); font-size: .68rem; }
+    .progress-track { width: 100%; height: 9px; overflow: hidden; border-radius: 6px; background: #ebeee5; }
+    .progress-done { height: 100%; width: 0; border-radius: inherit; background: var(--green); transition: width .35s ease; }
+    .legend { display: grid; gap: 10px; margin: 15px 0 0; padding: 0; list-style: none; }
+    .legend li { display: flex; align-items: center; justify-content: space-between; gap: 12px; color: #5d665b; font-size: .72rem; }
+    .legend-label { display: flex; align-items: center; gap: 8px; }
+    .legend-swatch { width: 8px; height: 8px; border-radius: 2px; background: var(--green); }
+    .legend li:nth-child(2) .legend-swatch { background: var(--amber); }
+    .legend li:nth-child(3) .legend-swatch { background: #cdd2c8; }
+    .legend-value { color: var(--ink); font: 500 .72rem "DM Mono", monospace; }
+    .type-split { display: flex; align-items: center; justify-content: space-between; gap: 10px; margin-top: 17px; padding-top: 13px; border-top: 1px solid var(--line); }
+    .type-item { min-width: 0; }
+    .type-item span { display: block; margin-bottom: 4px; color: var(--muted); font-size: .65rem; }
+    .type-item strong { font: 600 .88rem "DM Mono", monospace; }
+    .type-divider { width: 1px; height: 31px; background: var(--line); }
+    .table-panel { margin-top: 13px; }
+    .table-head { align-items: center; }
+    .table-tools { display: flex; align-items: center; gap: 8px; }
+    .table-search { width: min(210px, 30vw); height: 34px; padding: 0 10px; border: 1px solid var(--line); border-radius: 5px; outline: none; background: #fff; font-size: .72rem; }
+    .table-search:focus { border-color: var(--green); box-shadow: 0 0 0 3px #316b4918; }
+    .table-scroll { overflow: auto; max-height: 425px; border-top: 1px solid var(--line); }
+    table { width: 100%; border-collapse: collapse; text-align: left; }
+    thead { position: sticky; z-index: 1; top: 0; background: #f7f8f3; }
+    th { padding: 10px 15px; color: #737a70; font: 500 .62rem "DM Mono", monospace; letter-spacing: .015em; white-space: nowrap; }
+    td { padding: 11px 15px; border-top: 1px solid #eceee8; color: #434b41; font-size: .73rem; white-space: nowrap; }
+    tbody tr:hover { background: #fafbf7; }
+    td.name { max-width: 260px; overflow: hidden; color: #29352b; font-weight: 600; text-overflow: ellipsis; }
+    .numeric { font: 500 .72rem "DM Mono", monospace; font-variant-numeric: tabular-nums; }
+    .table-progress { display: flex; align-items: center; gap: 9px; }
+    .mini-track { width: 75px; height: 5px; overflow: hidden; border-radius: 5px; background: #e8ebe3; }
+    .mini-fill { height: 100%; border-radius: inherit; background: #6c9a67; }
+    .table-empty { padding: 24px; color: var(--muted); text-align: center; }
+    .warning, .error { display: none; margin-top: 12px; padding: 10px 12px; border-radius: 5px; font-size: .73rem; }
+    .warning { border: 1px solid #e9d9b8; background: var(--amber-soft); color: #725222; }
+    .error { border: 1px solid #e8c6bc; background: var(--red-soft); color: #7b3b30; }
+    .footnote { display: flex; align-items: start; justify-content: space-between; gap: 18px; margin-top: 13px; color: #798076; font-size: .66rem; }
+    .footnote span:last-child { text-align: right; }
+    @media (max-width: 980px) {
+      .topbar-inner, .main { width: min(100% - 40px, 780px); }
+      .analysis-grid { grid-template-columns: minmax(0, 1.35fr) minmax(260px, .85fr); }
+    }
+    @media (max-width: 700px) {
+      .topbar-inner, .main { width: calc(100% - 28px); }
+      .topbar-inner { height: 57px; }
+      .top-meta { gap: 8px; }
+      .top-meta > span:first-child { display: none; }
+      .main { padding-top: 22px; }
+      .heading-row { align-items: start; flex-direction: column; gap: 12px; margin-bottom: 16px; }
+      .source-meta { align-items: start; text-align: left; }
+      .controls { align-items: start; flex-direction: column; }
+      .segments { width: 100%; }
+      .segment { flex: 1; padding-inline: 6px; }
+      .control-right { width: 100%; justify-content: space-between; }
+      .metrics { grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 8px; }
+      .metric { padding: 13px 12px 12px; }
+      .metric-label { margin-bottom: 10px; font-size: .67rem; }
+      .metric-foot { align-items: start; flex-direction: column; gap: 3px; }
+      .analysis-grid { grid-template-columns: 1fr; gap: 9px; margin-top: 9px; }
+      .panel-head { padding: 14px 13px 10px; }
+      .chart-wrap { height: 205px; padding-inline: 7px; }
+      .status-content { padding-inline: 14px; }
+      .table-panel { margin-top: 9px; }
+      .table-head { align-items: start; flex-direction: column; }
+      .table-tools { width: 100%; }
+      .table-search { width: 100%; }
+      .table-tools .select { flex: 0 0 auto; }
+      th, td { padding: 10px 11px; }
+      .footnote { flex-direction: column; gap: 5px; }
+      .footnote span:last-child { text-align: left; }
+    }
+    @media (prefers-reduced-motion: reduce) {
+      *, *::before, *::after { scroll-behavior: auto !important; transition-duration: .01ms !important; }
+    }
+  </style>
+</head>
+<body>
+  <header class="topbar">
+    <div class="topbar-inner">
+      <div class="brand"><span class="brand-mark" aria-hidden="true">R/</span><span>RENEWAL OPERATIONS</span></div>
+      <div class="top-meta"><span>PKG1-2 · SEPTEMBER 2026</span><span class="live" id="liveStatus"><span class="live-dot" aria-hidden="true"></span><span id="liveLabel">Connecting</span></span></div>
+    </div>
+  </header>
+  <main class="main">
+    <section class="heading-row" aria-labelledby="pageTitle">
+      <div><p class="eyebrow">Signoff control / 01</p><h1 id="pageTitle">Fresh &amp; re-signoff</h1><p class="subheading">Renewal progress across teams and signoff dates.</p></div>
+      <div class="source-meta"><span>Workbook updated <strong id="sourceUpdated">Waiting for data</strong></span><span id="latestDate">Latest signoff date: --</span></div>
+    </section>
+
+    <section class="controls" aria-label="Dashboard filters">
+      <div class="segments" role="group" aria-label="Record type">
+        <button class="segment" type="button" data-group="all" aria-pressed="true">All records</button>
+        <button class="segment" type="button" data-group="fresh" aria-pressed="false">Fresh</button>
+        <button class="segment" type="button" data-group="resignoff" aria-pressed="false">Re-signoff</button>
+      </div>
+      <div class="control-right"><label class="control-label" for="trendRange">Trend range</label><select class="select" id="trendRange"><option value="30">Last 30 days</option><option value="14">Last 14 days</option><option value="all">All dates</option></select></div>
+    </section>
+
+    <section class="metrics" aria-label="Signoff summary">
+      <article class="metric"><div class="metric-label">Records in sheet <span class="metric-marker" aria-hidden="true"></span></div><p class="metric-value" id="totalMetric">--</p><div class="metric-foot"><span>Rows in Data sheet</span><strong id="typeShare">--</strong></div></article>
+      <article class="metric"><div class="metric-label">Signoff done <span class="metric-marker" aria-hidden="true"></span></div><p class="metric-value" id="doneMetric">--</p><div class="metric-foot"><span>Completion</span><strong id="completionMetric">--</strong></div></article>
+      <article class="metric"><div class="metric-label">Signoff pending <span class="metric-marker" aria-hidden="true"></span></div><p class="metric-value" id="pendingMetric">--</p><div class="metric-foot"><span>Records awaiting signoff</span><strong id="unclassifiedMetric">-- unclassified</strong></div></article>
+      <article class="metric"><div class="metric-label">Mail pending <span class="metric-marker" aria-hidden="true"></span></div><p class="metric-value" id="mailPendingMetric">--</p><div class="metric-foot"><span>Mail status is pending</span><strong id="mailShare">--</strong></div></article>
+    </section>
+
+    <section class="analysis-grid" aria-label="Signoff analysis">
+      <article class="panel">
+        <div class="panel-head"><div><h2>Signoffs over time</h2><p>Rows with a recorded signoff date</p></div><span class="panel-kicker" id="trendTotal">-- DATED</span></div>
+        <div class="chart-wrap"><canvas id="trendChart" role="img" aria-label="Line chart of signoffs by date"></canvas></div>
+      </article>
+      <article class="panel">
+        <div class="panel-head"><div><h2>Signoff status</h2><p>Completion across classified records</p></div><span class="panel-kicker">CURRENT MIX</span></div>
+        <div class="status-content">
+          <div class="completion-line"><strong id="statusPercent">--%</strong><span id="classifiedText">-- classified records</span></div>
+          <div class="progress-track" role="progressbar" aria-label="Signoff completion" aria-valuemin="0" aria-valuemax="100" id="completionBar"><div class="progress-done" id="completionFill"></div></div>
+          <ul class="legend" id="statusLegend"></ul>
+          <div class="type-split"><div class="type-item"><span>Fresh</span><strong id="freshCount">--</strong></div><span class="type-divider" aria-hidden="true"></span><div class="type-item"><span>Re-signoff</span><strong id="resignoffCount">--</strong></div></div>
+        </div>
+      </article>
+    </section>
+
+    <section class="panel table-panel" aria-labelledby="breakdownTitle">
+      <div class="panel-head table-head"><div><h2 id="breakdownTitle">Subdivision workload</h2><p id="breakdownSubtitle">Sorted by records awaiting signoff</p></div><div class="table-tools"><input class="table-search" type="search" id="tableSearch" placeholder="Search teams" aria-label="Search teams"><label class="control-label" for="groupBy">Group</label><select class="select" id="groupBy"><option value="divisions">Subdivision</option><option value="executives">Executive</option></select></div></div>
+      <div class="table-scroll"><table><thead><tr><th scope="col" id="groupHeading">SUBDIVISION</th><th scope="col">TOTAL</th><th scope="col">DONE</th><th scope="col">PENDING</th><th scope="col">COMPLETION</th></tr></thead><tbody id="breakdownRows"><tr><td class="table-empty" colspan="5">Loading workbook data…</td></tr></tbody></table></div>
+    </section>
+
+    <div class="warning" id="warningMessage" role="status"></div>
+    <div class="error" id="errorMessage" role="alert"></div>
+    <div class="footnote"><span>Data is aggregated from the workbook's Data sheet; consumer and meter identifiers are not sent to this page.</span><span id="refreshNote">Refreshes automatically every minute.</span></div>
+  </main>
+  <script>
+    const numberFormat = new Intl.NumberFormat("en-US");
+    const state = { data: null, group: "all", tableSearch: "" };
+    const byId = (id) => document.getElementById(id);
+
+    function groupData() {
+      return state.data?.groups?.[state.group];
+    }
+
+    function renderMetrics(data) {
+      const { summary, typeCounts } = data;
+      byId("totalMetric").textContent = numberFormat.format(summary.total);
+      byId("doneMetric").textContent = numberFormat.format(summary.done);
+      byId("pendingMetric").textContent = numberFormat.format(summary.pending);
+      byId("mailPendingMetric").textContent = numberFormat.format(summary.mailPending);
+      byId("completionMetric").textContent = `${summary.completion}%`;
+      byId("unclassifiedMetric").textContent = `${numberFormat.format(summary.unclassified)} unclassified`;
+      byId("mailShare").textContent = summary.total ? `${(summary.mailPending / summary.total * 100).toFixed(1)}% of total` : "0% of total";
+      const share = state.group === "fresh" ? "Fresh records" : state.group === "resignoff" ? "Re-signoff records" : `${numberFormat.format(typeCounts.fresh)} fresh · ${numberFormat.format(typeCounts.resignoff)} re-signoff`;
+      byId("typeShare").textContent = share;
+      byId("statusPercent").textContent = `${summary.completion}%`;
+      byId("classifiedText").textContent = `${numberFormat.format(summary.done + summary.pending)} classified records`;
+      byId("completionFill").style.width = `${summary.completion}%`;
+      byId("completionBar").setAttribute("aria-valuenow", String(summary.completion));
+      byId("freshCount").textContent = numberFormat.format(typeCounts.fresh);
+      byId("resignoffCount").textContent = numberFormat.format(typeCounts.resignoff);
+
+      const statuses = [
+        ["Done", summary.done, "done"],
+        ["Pending", summary.pending, "pending"],
+        ["Unclassified", summary.unclassified, "other"]
+      ];
+      byId("statusLegend").innerHTML = statuses.map(([label, value, key]) => `<li><span class="legend-label"><span class="legend-swatch ${key}" aria-hidden="true"></span>${label}</span><span class="legend-value">${numberFormat.format(value)}</span></li>`).join("");
+    }
+
+    function chartPoints(data) {
+      const dates = data.dailySignoffs.map(([day]) => day);
+      if (!dates.length) return [];
+      const range = byId("trendRange").value;
+      const latest = new Date(`${dates[dates.length - 1]}T00:00:00`);
+      const start = new Date(`${range === "all" ? dates[0] : dates[dates.length - 1]}T00:00:00`);
+      if (range !== "all") start.setDate(start.getDate() - Number(range) + 1);
+      const counts = new Map(data.dailySignoffs);
+      const points = [];
+      for (const day = new Date(start); day <= latest; day.setDate(day.getDate() + 1)) {
+        const key = `${day.getFullYear()}-${String(day.getMonth() + 1).padStart(2, "0")}-${String(day.getDate()).padStart(2, "0")}`;
+        points.push([key, counts.get(key) || 0]);
+      }
+      return points;
+    }
+
+    function drawTrend(data) {
+      const canvas = byId("trendChart");
+      const rect = canvas.getBoundingClientRect();
+      if (!rect.width || !rect.height) return;
+      const ratio = window.devicePixelRatio || 1;
+      canvas.width = Math.round(rect.width * ratio);
+      canvas.height = Math.round(rect.height * ratio);
+      const ctx = canvas.getContext("2d");
+      ctx.scale(ratio, ratio);
+      const width = rect.width;
+      const height = rect.height;
+      const left = 39;
+      const right = 10;
+      const top = 15;
+      const bottom = 28;
+      const chartWidth = width - left - right;
+      const chartHeight = height - top - bottom;
+      const points = chartPoints(data);
+      const count = points.reduce((sum, point) => sum + point[1], 0);
+      byId("trendTotal").textContent = `${numberFormat.format(count)} DATED`;
+      ctx.clearRect(0, 0, width, height);
+      if (!points.length) {
+        ctx.fillStyle = "#70776e";
+        ctx.font = "12px DM Sans, sans-serif";
+        ctx.textAlign = "center";
+        ctx.fillText("No signoff dates in this selection", width / 2, height / 2);
+        return;
+      }
+      const maxValue = Math.max(...points.map((point) => point[1]), 1);
+      const step = Math.pow(10, Math.floor(Math.log10(maxValue)));
+      const axisMax = Math.ceil(maxValue / step) * step || 1;
+      ctx.font = "10px DM Mono, monospace";
+      ctx.textAlign = "right";
+      ctx.textBaseline = "middle";
+      for (let line = 0; line <= 3; line++) {
+        const value = Math.round(axisMax * line / 3);
+        const y = top + chartHeight - chartHeight * line / 3;
+        ctx.strokeStyle = "#e9ece4";
+        ctx.lineWidth = 1;
+        ctx.beginPath();
+        ctx.moveTo(left, y);
+        ctx.lineTo(width - right, y);
+        ctx.stroke();
+        ctx.fillStyle = "#858c81";
+        ctx.fillText(numberFormat.format(value), left - 8, y);
+      }
+      const coords = points.map(([day, value], index) => ({
+        day,
+        value,
+        x: left + (points.length === 1 ? chartWidth / 2 : index * chartWidth / (points.length - 1)),
+        y: top + chartHeight - value / axisMax * chartHeight
+      }));
+      const gradient = ctx.createLinearGradient(0, top, 0, top + chartHeight);
+      gradient.addColorStop(0, "rgba(49,107,73,.19)");
+      gradient.addColorStop(1, "rgba(49,107,73,0)");
+      ctx.beginPath();
+      ctx.moveTo(coords[0].x, top + chartHeight);
+      coords.forEach((point) => ctx.lineTo(point.x, point.y));
+      ctx.lineTo(coords[coords.length - 1].x, top + chartHeight);
+      ctx.closePath();
+      ctx.fillStyle = gradient;
+      ctx.fill();
+      ctx.beginPath();
+      coords.forEach((point, index) => index ? ctx.lineTo(point.x, point.y) : ctx.moveTo(point.x, point.y));
+      ctx.strokeStyle = "#316b49";
+      ctx.lineWidth = 2;
+      ctx.lineJoin = "round";
+      ctx.stroke();
+      coords.forEach((point) => {
+        ctx.beginPath();
+        ctx.arc(point.x, point.y, points.length > 45 ? 1.8 : 2.6, 0, Math.PI * 2);
+        ctx.fillStyle = "#fffefa";
+        ctx.fill();
+        ctx.strokeStyle = "#316b49";
+        ctx.lineWidth = 1.4;
+        ctx.stroke();
+      });
+      const labelIndexes = [...new Set([0, Math.floor((points.length - 1) / 2), points.length - 1])];
+      ctx.fillStyle = "#7b8278";
+      ctx.font = "10px DM Sans, sans-serif";
+      ctx.textBaseline = "top";
+      labelIndexes.forEach((index, labelIndex) => {
+        const date = new Date(`${coords[index].day}T00:00:00`);
+        const label = date.toLocaleDateString("en-US", { month: "short", day: "numeric" });
+        ctx.textAlign = labelIndex === 0 ? "left" : labelIndex === labelIndexes.length - 1 ? "right" : "center";
+        ctx.fillText(label, coords[index].x, top + chartHeight + 9);
+      });
+    }
+
+    function renderTable(data) {
+      const kind = byId("groupBy").value;
+      const isExecutive = kind === "executives";
+      byId("breakdownTitle").textContent = `${isExecutive ? "Executive" : "Subdivision"} workload`;
+      byId("breakdownSubtitle").textContent = "Sorted by records awaiting signoff";
+      byId("groupHeading").textContent = isExecutive ? "EXECUTIVE" : "SUBDIVISION";
+      const search = state.tableSearch.trim().toLowerCase();
+      const items = data[kind].filter((item) => item.name.toLowerCase().includes(search));
+      if (!items.length) {
+        byId("breakdownRows").innerHTML = '<tr><td class="table-empty" colspan="5">No matching teams.</td></tr>';
+        return;
+      }
+      byId("breakdownRows").innerHTML = items.map((item) => `<tr><td class="name" title="${escapeHtml(item.name)}">${escapeHtml(item.name)}</td><td class="numeric">${numberFormat.format(item.total)}</td><td class="numeric">${numberFormat.format(item.done)}</td><td class="numeric">${numberFormat.format(item.pending)}</td><td><div class="table-progress"><span class="numeric">${item.completion}%</span><span class="mini-track" aria-hidden="true"><span class="mini-fill" style="display:block;width:${item.completion}%"></span></span></div></td></tr>`).join("");
+    }
+
+    function escapeHtml(value) {
+      return value.replace(/[&<>"']/g, (character) => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;" })[character]);
+    }
+
+    function render() {
+      if (!state.data) return;
+      const data = groupData();
+      renderMetrics(data);
+      drawTrend(data);
+      renderTable(data);
+      byId("sourceUpdated").textContent = new Date(state.data.sourceModifiedAt).toLocaleString();
+      byId("latestDate").textContent = `Latest signoff date: ${state.data.latestSignoffDate || "--"}`;
+      byId("warningMessage").style.display = state.data.warning ? "block" : "none";
+      byId("warningMessage").textContent = state.data.warning || "";
+    }
+
+    async function refresh() {
+      try {
+        const response = await fetch("/api/dashboard", { cache: "no-store" });
+        const payload = await response.json();
+        if (!response.ok) throw new Error(payload.error || "Could not load workbook data.");
+        state.data = payload;
+        byId("liveStatus").classList.remove("offline");
+        byId("liveLabel").textContent = "Live · checks every 60s";
+        byId("errorMessage").style.display = "none";
+        byId("errorMessage").textContent = "";
+        byId("refreshNote").textContent = `Last checked ${new Date(payload.generatedAt).toLocaleTimeString()} · checks every 60 seconds.`;
+        render();
+      } catch (error) {
+        byId("liveStatus").classList.add("offline");
+        byId("liveLabel").textContent = "Source unavailable";
+        byId("errorMessage").textContent = error.message;
+        byId("errorMessage").style.display = "block";
+      }
+    }
+
+    document.querySelectorAll("[data-group]").forEach((button) => button.addEventListener("click", () => {
+      state.group = button.dataset.group;
+      document.querySelectorAll("[data-group]").forEach((item) => item.setAttribute("aria-pressed", String(item === button)));
+      render();
+    }));
+    byId("trendRange").addEventListener("change", () => state.data && drawTrend(groupData()));
+    byId("groupBy").addEventListener("change", () => state.data && renderTable(groupData()));
+    byId("tableSearch").addEventListener("input", (event) => { state.tableSearch = event.target.value; state.data && renderTable(groupData()); });
+    window.addEventListener("resize", () => state.data && drawTrend(groupData()));
+    refresh();
+    window.setInterval(refresh, 60_000);
+  </script>
+</body>
+</html>
