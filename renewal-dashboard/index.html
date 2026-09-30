@@ -399,7 +399,12 @@
     async function refresh() {
       try {
         const response = await fetch("/api/dashboard", { cache: "no-store" });
-        const payload = await response.json();
+        let payload;
+        try {
+          payload = await response.json();
+        } catch {
+          throw new Error("The SharePoint workbook connection is not configured for this deployment yet.");
+        }
         if (!response.ok) throw new Error(payload.error || "Could not load workbook data.");
         state.data = payload;
         byId("liveStatus").classList.remove("offline");

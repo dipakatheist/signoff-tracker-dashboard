@@ -2,6 +2,8 @@
 
 This local dashboard reads the `Data` worksheets from the September 2026 PKG1-2 and PKG-7 signoff workbooks. It serves aggregate counts only; consumer numbers, names, and meter identifiers are never sent to the browser. Use the package selector to see either workbook or both combined.
 
+The current Vercel deployment contains the dashboard UI only. It does not read workbook data until a secure SharePoint API is configured; neither workbook nor its aggregates are included in the deployment.
+
 ## Start
 
 Double-click `start_dashboard.bat`. It opens the dashboard at `http://127.0.0.1:8765` and keeps the local server running in the console. Press Ctrl+C in that console to stop it.

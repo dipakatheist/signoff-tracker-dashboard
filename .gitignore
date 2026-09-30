@@ -2,3 +2,7 @@ __pycache__/
 *.py[cod]
 .venv/
 venv/
+.vercel/
+.env*
+.vscode/
+.vercel
